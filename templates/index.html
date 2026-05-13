@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salt Water Pool Chemistry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f0f4f8; --surface:#fff; --surface2:#e8eef5; --border:#d0dcea;
+  --text:#1a2533; --muted:#6b7f96; --water:#2d7dd2; --water-light:#e8f2fc;
+  --good:#1a9e5c; --good-bg:#e6f7ef; --warn:#d97706; --warn-bg:#fef3e2;
+  --danger:#dc2626; --danger-bg:#fde8e8;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 40px,rgba(45,125,210,.03) 40px,rgba(45,125,210,.03) 41px),repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(45,125,210,.03) 40px,rgba(45,125,210,.03) 41px);pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
+header{margin-bottom:2.5rem}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.logo-icon{width:36px;height:36px;background:var(--water);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px}
+h1{font-family:'IBM Plex Mono',monospace;font-size:1.5rem;font-weight:500}
+.tagline{font-size:12px;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(45,125,210,.06)}
+.card-header{padding:12px 20px;background:var(--water);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.vol-row{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.vol-row label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+input[type=number]{padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500;outline:none;-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+input[type=number]:focus{border-color:var(--water);background:#fff}
+select{padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:13px;outline:none}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.field{padding:14px 18px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+.flabel{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between}
+.funit{opacity:.7}
+.finput{display:flex;align-items:center;gap:6px}
+.finput input{flex:1}
+.frange{font-size:10px;color:var(--muted);margin-top:3px;font-family:'IBM Plex Mono',monospace}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;transition:background .3s}
+.dot.good{background:var(--good)}.dot.warn{background:var(--warn)}.dot.danger{background:var(--danger)}
+.btn{width:100%;padding:14px;background:var(--water);color:#fff;border:none;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.08em;cursor:pointer;text-transform:uppercase}
+.btn:hover{background:#2268b8}
+#out{display:none}
+.lsi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(45,125,210,.06);display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.lsi-num{font-family:'IBM Plex Mono',monospace;font-size:2.8rem;font-weight:500;line-height:1;min-width:110px}
+.lsi-num.good{color:var(--good)}.lsi-num.warn{color:var(--warn)}.lsi-num.danger{color:var(--danger)}
+.lsi-lbl{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.lsi-bar-wrap{position:relative;height:8px;background:linear-gradient(to right,#dc2626,#d97706 30%,#1a9e5c 50%,#d97706 70%,#dc2626);border-radius:4px;margin-top:8px}
+.lsi-pin{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:#fff;border:2px solid var(--text);border-radius:50%;transition:left .5s}
+.lsi-ticks{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px}
+.lsi-scale{flex:1;min-width:200px}
+.lsi-desc{font-size:13px;flex:1;min-width:200px}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.5rem}
+@media(max-width:600px){.rgrid{grid-template-columns:1fr}}
+.rc{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.rc.good{border-left:3px solid var(--good)}.rc.warn{border-left:3px solid var(--warn)}.rc.danger{border-left:3px solid var(--danger)}
+.rc-head{padding:10px 14px 8px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.rc-name{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.badge{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:2px 8px;border-radius:3px;font-weight:500}
+.badge.good{background:var(--good-bg);color:var(--good)}.badge.warn{background:var(--warn-bg);color:var(--warn)}.badge.danger{background:var(--danger-bg);color:var(--danger)}
+.rc-body{padding:12px 14px}
+.rc-val{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;font-weight:500;line-height:1.1;margin-bottom:2px}
+.rc-val.good{color:var(--good)}.rc-val.warn{color:var(--warn)}.rc-val.danger{color:var(--danger)}
+.rc-tgt{font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:8px}
+.rc-msg{font-size:12px;line-height:1.6}
+.rc-msg.ok{color:var(--good)}
+.dosebox{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-top:8px}
+.doserow{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--border);gap:8px;font-size:12px}
+.doserow:last-of-type{border-bottom:none}
+.dchem{color:var(--muted);flex:1}
+.damt{font-family:'IBM Plex Mono',monospace;font-weight:500;color:var(--water);font-size:14px;white-space:nowrap}
+.dnote{font-size:10px;color:var(--muted);margin-top:5px;font-style:italic;line-height:1.4;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.dnote:last-child{border-bottom:none;padding-bottom:0}
+.dextra{font-size:11px;color:var(--muted);margin-top:7px;padding-top:7px;border-top:1px solid var(--border)}
+.nofix{background:var(--danger-bg);border:1px solid rgba(220,38,38,.2);border-radius:6px;padding:9px 12px;margin-top:8px;font-size:12px;color:var(--danger);line-height:1.5}
+.order-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.5rem}
+.order-hd{padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.olist{list-style:none}
+.oitem{display:flex;align-items:flex-start;gap:14px;padding:12px 20px;border-bottom:1px solid var(--border)}
+.oitem:last-child{border-bottom:none}
+.onum{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;color:#fff;background:var(--water);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.otext{font-size:13px;line-height:1.5}
+.otext strong{color:var(--text)}
+.odose{font-family:'IBM Plex Mono',monospace;color:var(--water);font-weight:500}
+.notes{background:var(--water-light);border:1px solid rgba(45,125,210,.2);border-radius:8px;padding:14px 18px;font-size:12px;color:#1d5fa8;line-height:1.7}
+.notes strong{display:block;margin-bottom:4px;font-family:'IBM Plex Mono',monospace;letter-spacing:.05em}
+.disc{margin-top:2rem;font-size:11px;color:var(--muted);text-align:center;font-family:'IBM Plex Mono',monospace;line-height:1.6}
+
+/* History */
+.hist-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1.5rem;box-shadow:0 2px 8px rgba(45,125,210,.06)}
+.hist-hd{padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+.hist-hd-btns{display:flex;gap:8px}
+.hist-hd-btn{padding:4px 10px;font-family:'IBM Plex Mono',monospace;font-size:10px;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--muted);cursor:pointer}
+.hist-hd-btn:hover{background:var(--surface);color:var(--text)}
+.hist-empty{padding:20px;text-align:center;color:var(--muted);font-size:12px;font-family:'IBM Plex Mono',monospace}
+.hist-table{width:100%;border-collapse:collapse;font-size:12px}
+.hist-table th{padding:8px 12px;text-align:left;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap}
+.hist-table td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.hist-table tr:last-child td{border-bottom:none}
+.hist-table tr:hover td{background:var(--surface2)}
+.hval{font-family:'IBM Plex Mono',monospace;font-weight:500}
+.hval.good{color:var(--good)}.hval.warn{color:var(--warn)}.hval.danger{color:var(--danger)}.hval.na{color:var(--muted)}
+.hdate{color:var(--muted);white-space:nowrap;font-family:'IBM Plex Mono',monospace;font-size:11px}
+.hload{padding:4px 8px;font-family:'IBM Plex Mono',monospace;font-size:10px;border:1px solid var(--water);border-radius:3px;background:transparent;color:var(--water);cursor:pointer;white-space:nowrap}
+.hload:hover{background:var(--water-light)}
+.hdel{padding:4px 6px;font-family:'IBM Plex Mono',monospace;font-size:10px;border:1px solid var(--border);border-radius:3px;background:transparent;color:var(--muted);cursor:pointer;margin-left:4px}
+.hdel:hover{border-color:var(--danger);color:var(--danger)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">&#x223C;</div>
+      <h1>swg_chem</h1>
+    </div>
+    <div class="tagline">// salt water generator pool chemistry &middot; TFP PoolMath methodology</div>
+  </header>
+
+  <div class="hist-card" id="hist-card">
+    <div class="hist-hd">
+      <span>&#x25A3; test history</span>
+      <div class="hist-hd-btns">
+        <button class="hist-hd-btn" onclick="exportCSV()">export CSV</button>
+        <button class="hist-hd-btn" onclick="clearHistory()">clear all</button>
+      </div>
+    </div>
+    <div id="hist-body"><div class="hist-empty">no tests logged yet &mdash; run an analysis to save a reading</div></div>
+  </div>
+
+    <div class="card">
+    <div class="card-header">&#x25C8; enter your test results &mdash; leave blank if not tested</div>
+    <div class="vol-row">
+      <label>Pool Volume</label>
+      <input type="number" id="vol" value="24000" min="100" max="200000" style="width:110px">
+      <select id="vunit"><option value="gal">gallons</option><option value="L">liters</option></select>
+      <span style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace">// dosages scale to your pool size</span>
+    </div>
+    <div class="fields">
+      <div class="field">
+        <div class="flabel">Free Chlorine <span class="funit">ppm</span></div>
+        <div class="finput"><input type="number" id="f_cl" step="0.1" min="0" max="20" placeholder="&mdash;"><div class="dot" id="d_cl"></div></div>
+        <div class="frange" id="r_cl">enter CYA for TFP target</div>
+      </div>
+      <div class="field">
+        <div class="flabel">pH</div>
+        <div class="finput"><input type="number" id="f_ph" step="0.1" min="6" max="9" placeholder="&mdash;"><div class="dot" id="d_ph"></div></div>
+        <div class="frange">ideal: 7.4 &ndash; 7.6</div>
+      </div>
+      <div class="field">
+        <div class="flabel">Total Alkalinity <span class="funit">ppm</span></div>
+        <div class="finput"><input type="number" id="f_ta" step="1" min="0" max="400" placeholder="&mdash;"><div class="dot" id="d_ta"></div></div>
+        <div class="frange">ideal: 60 &ndash; 80 ppm (SWG)</div>
+      </div>
+      <div class="field">
+        <div class="flabel">Calcium Hardness <span class="funit">ppm</span></div>
+        <div class="finput"><input type="number" id="f_ca" step="1" min="0" max="1000" placeholder="&mdash;"><div class="dot" id="d_ca"></div></div>
+        <div class="frange">ideal: 200 &ndash; 400 ppm</div>
+      </div>
+      <div class="field">
+        <div class="flabel">Cyanuric Acid <span class="funit">ppm</span></div>
+        <div class="finput"><input type="number" id="f_cya" step="1" min="0" max="300" placeholder="&mdash;"><div class="dot" id="d_cya"></div></div>
+        <div class="frange">ideal: 60 &ndash; 90 ppm (SWG)</div>
+      </div>
+      <div class="field">
+        <div class="flabel">Salt Level <span class="funit">ppm</span></div>
+        <div class="finput"><input type="number" id="f_salt" step="10" min="0" max="6000" placeholder="&mdash;"><div class="dot" id="d_salt"></div></div>
+        <div class="frange">ideal: 2700 &ndash; 3400 ppm</div>
+      </div>
+      <div class="field">
+        <div class="flabel">Water Temp <span class="funit">&deg;F</span></div>
+        <div class="finput"><input type="number" id="f_tmp" step="1" min="32" max="110" placeholder="82"><div class="dot" id="d_tmp"></div></div>
+        <div class="frange">for LSI calculation</div>
+      </div>
+    </div>
+    <button class="btn" onclick="go()">&#x25BA; analyze &amp; calculate dosages</button>
+  </div>
+
+  <div id="out">
+    <div class="lsi-card">
+      <div><div class="lsi-lbl">Langelier Saturation Index</div><div class="lsi-num" id="lsi_num">&mdash;</div></div>
+      <div class="lsi-scale">
+        <div style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:4px">CORROSIVE &larr; balanced &rarr; SCALING</div>
+        <div class="lsi-bar-wrap"><div class="lsi-pin" id="lsi_pin" style="left:50%"></div></div>
+        <div class="lsi-ticks"><span>&minus;0.5</span><span>&minus;0.3</span><span>0.0</span><span>+0.3</span><span>+0.5</span></div>
+      </div>
+      <div class="lsi-desc" id="lsi_desc"></div>
+    </div>
+    <div class="rgrid" id="rgrid"></div>
+    <div class="order-card" id="ocard" style="display:none">
+      <div class="order-hd">&#x2691; treatment order &mdash; add chemicals in this sequence</div>
+      <ul class="olist" id="olist"></ul>
+    </div>
+    <div class="notes" id="notes"></div>
+  </div>
+
+  <p class="disc">Dosages use TFP PoolMath methodology and verified pool chemistry constants.<br>Follow product label instructions. Add chemicals separately with pump running. Retest after 4&ndash;6 hours.</p>
+</div>
+
+<script>
+// Ranges (SWG)
+var RNG = {
+  cl:   {lo:0.5, hi:20,   ilo:1.0,  ihi:5.0},
+  ph:   {lo:7.2, hi:7.8,  ilo:7.4,  ihi:7.6},
+  ta:   {lo:50,  hi:90,   ilo:60,   ihi:80},
+  ca:   {lo:200, hi:400,  ilo:200,  ihi:400},
+  cya:  {lo:60,  hi:90,   ilo:60,   ihi:90},
+  salt: {lo:2700,hi:3400, ilo:2700, ihi:3400},
+};
+
+function status(v, r) {
+  if (v < r.lo || v > r.hi) return 'danger';
+  if (v < r.ilo || v > r.ihi) return 'warn';
+  return 'good';
+}
+
+// FC targets for SWG: min = 5% CYA, target = 5% CYA, SLAM = 40% CYA
+function fcTargets(cya) {
+  if (!cya || isNaN(cya) || cya <= 0) return {mn:1.0, tg:3.0, sl:10.0};
+  return {
+    mn: parseFloat((cya * 0.05).toFixed(1)),
+    tg: parseFloat((cya * 0.05).toFixed(1)),
+    sl: parseFloat((cya * 0.40).toFixed(1))
+  };
+}
+
+// LSI
+function lsi(ph, F, ca, ta) {
+  if (isNaN(ph)||isNaN(F)||isNaN(ca)||isNaN(ta)||ca<=0||ta<=0) return null;
+  var tc = (F - 32) * 5/9;
+  var TF = 0.000000136*Math.pow(tc,3) - 0.0000204*Math.pow(tc,2) + 0.00363*tc + 0.77;
+  return parseFloat((ph + TF + Math.log10(ca) + Math.log10(ta) - 12.1).toFixed(2));
+}
+
+// Volume in gallons
+function toGal(v, u) { return u === 'L' ? v * 0.264172 : v; }
+
+// ── Dosing constants (verified: TFP PoolMath, poolnerd, poolchemcalculators.com) ──
+// Liquid chlorine 12.5%:  10.24 fl oz raises 10,000 gal by 1 ppm FC
+// Liquid chlorine 10%:    12.8  fl oz raises 10,000 gal by 1 ppm FC
+// Soda ash:               12    oz (wt) raises pH 0.2 in 10,000 gal
+// Muriatic acid 31.45%:   32    fl oz (1 qt) lowers pH 0.2 in 10,000 gal
+// Baking soda:            1.5   lbs raises TA 10 ppm in 10,000 gal
+// Muriatic acid 31.45%:   25    fl oz lowers TA 10 ppm in 10,000 gal
+// Calcium chloride:       1.25  lbs raises CH 10 ppm in 10,000 gal
+// Cyanuric acid granular: 13    oz (wt) raises CYA 10 ppm in 10,000 gal
+// Pool salt NaCl 99.4%:   40    lbs raises salt 500 ppm in 10,000 gal
+
+function dFC125(diff, G)  { return diff * (G/10000) * 10.24; }  // fl oz
+function dFC10(diff, G)   { return diff * (G/10000) * 12.8;  }  // fl oz
+function dPhUp(diff, G)   { return (diff/0.2) * 12 * (G/10000); } // oz wt
+function dPhDn(diff, G)   { return (diff/0.2) * 32 * (G/10000); } // fl oz
+function dTaUp(diff, G)   { return (diff/10) * 1.5  * (G/10000); } // lbs
+function dTaDn(diff, G)   { return (diff/10) * 25   * (G/10000); } // fl oz
+function dCaUp(diff, G)   { return (diff/10) * 1.25 * (G/10000); } // lbs
+function dCyaUp(diff, G)  { return (diff/10) * 13   * (G/10000); } // oz wt
+function dSaltUp(diff, G) { return (diff/500) * 40  * (G/10000); } // lbs
+
+// Format helpers
+function ffoz(oz) {
+  oz = Math.round(oz * 10) / 10;
+  if (oz >= 128) return (oz/128).toFixed(2) + ' gal';
+  if (oz >= 32)  return (oz/32).toFixed(2) + ' qt (' + oz.toFixed(1) + ' fl oz)';
+  return oz.toFixed(1) + ' fl oz';
+}
+function ffowt(oz) {
+  oz = Math.round(oz * 10) / 10;
+  if (oz >= 16) return (oz/16).toFixed(2) + ' lbs';
+  return oz.toFixed(1) + ' oz';
+}
+function fflbs(lbs) {
+  lbs = Math.round(lbs * 100) / 100;
+  if (lbs < 1) return (lbs * 16).toFixed(1) + ' oz';
+  return lbs.toFixed(2) + ' lbs';
+}
+
+// Build a dose box HTML
+function doseBox(doses, extra) {
+  var h = '<div class="dosebox">';
+  doses.forEach(function(d) {
+    h += '<div class="doserow"><span class="dchem">' + d.chem + '</span><span class="damt">' + d.amt + '</span></div>';
+    if (d.note) h += '<div class="dnote">' + d.note + '</div>';
+  });
+  h += '</div>';
+  if (extra) h += '<div class="dextra">' + extra + '</div>';
+  return h;
+}
+
+function noFix(msg) {
+  return '<div class="nofix">' + msg + '</div>';
+}
+
+// ── Main function ──────────────────────────────────────────────
+function go() {
+  var vol  = parseFloat(document.getElementById('vol').value) || 24000;
+  var vunit = document.getElementById('vunit').value;
+  var G    = toGal(vol, vunit);
+
+  var cl   = parseFloat(document.getElementById('f_cl').value);
+  var ph   = parseFloat(document.getElementById('f_ph').value);
+  var ta   = parseFloat(document.getElementById('f_ta').value);
+  var ca   = parseFloat(document.getElementById('f_ca').value);
+  var cya  = parseFloat(document.getElementById('f_cya').value);
+  var salt = parseFloat(document.getElementById('f_salt').value);
+  var tmp  = parseFloat(document.getElementById('f_tmp').value) || 82;
+
+  var ft = fcTargets(cya);
+
+  // Update chlorine range label
+  if (!isNaN(cya) && cya > 0) {
+    document.getElementById('r_cl').textContent =
+      'TFP min: ' + ft.mn + ' \u00b7 target: ' + ft.tg + ' \u00b7 SLAM: ' + ft.sl + ' ppm';
+  }
+
+  document.getElementById('out').style.display = 'block';
+
+  // LSI
+  var L = lsi(ph, tmp, ca, ta);
+  var lsiEl   = document.getElementById('lsi_num');
+  var lsiDesc = document.getElementById('lsi_desc');
+  if (L !== null) {
+    lsiEl.textContent = L > 0 ? '+' + L : '' + L;
+    var lc, ld;
+    if      (L < -0.3) { lc='danger'; ld='Corrosive \u2014 etching plaster and corroding metal. Raise pH, TA, or calcium.'; }
+    else if (L < -0.1) { lc='warn';   ld='Slightly corrosive. Minor adjustment to pH, TA, or calcium recommended.'; }
+    else if (L <= 0.1) { lc='good';   ld='Perfectly balanced \u2014 neither corrosive nor scale-forming.'; }
+    else if (L <= 0.3) { lc='warn';   ld='Slightly scaling. Calcium deposits may begin forming on surfaces.'; }
+    else               { lc='danger'; ld='Scaling \u2014 calcium depositing actively. Lower pH, TA, or calcium.'; }
+    lsiEl.className = 'lsi-num ' + lc;
+    lsiDesc.textContent = ld;
+    document.getElementById('lsi_pin').style.left =
+      Math.min(100, Math.max(0, ((L + 0.5) / 1.0) * 100)) + '%';
+  } else {
+    lsiEl.className = 'lsi-num warn';
+    lsiEl.textContent = 'N/A';
+    lsiDesc.textContent = 'Enter pH, temp, calcium, and alkalinity to calculate LSI.';
+  }
+
+  // ── Build result cards ────────────────────────────────────────
+  var grid = document.getElementById('rgrid');
+  grid.innerHTML = '';
+  var treatments = [];
+
+  function addCard(id, label, val, unit, rng, tgtStr, goodMsg, bodyHtml, orderLine) {
+    if (isNaN(val)) return;
+    var st = status(val, rng);
+    var badge = {good:'OK', warn:'ADJUST', danger:'OUT OF RANGE'}[st];
+    var body = st === 'good'
+      ? '<div class="rc-msg ok">' + goodMsg + '</div>'
+      : bodyHtml;
+    grid.innerHTML +=
+      '<div class="rc ' + st + '">' +
+        '<div class="rc-head">' +
+          '<span class="rc-name">' + label + '</span>' +
+          '<span class="badge ' + st + '">' + badge + '</span>' +
+        '</div>' +
+        '<div class="rc-body">' +
+          '<div class="rc-val ' + st + '">' + val + unit + '</div>' +
+          '<div class="rc-tgt">target: ' + tgtStr + '</div>' +
+          body +
+        '</div>' +
+      '</div>';
+    if (st !== 'good' && orderLine) {
+      treatments.push({label: label, line: orderLine, st: st});
+    }
+  }
+
+  // ── FREE CHLORINE ─────────────────────────────────────────────
+  if (!isNaN(cl)) {
+    var clRng = {lo: ft.mn, hi: ft.sl, ilo: ft.mn, ihi: ft.tg * 2};
+    var clTgt = (!isNaN(cya) && cya > 0)
+      ? ft.mn + '\u2013' + (ft.tg * 2).toFixed(1) + ' ppm (5\u201310% of CYA ' + cya + ' ppm)'
+      : '1.0\u20135.0 ppm';
+    var clSt = status(cl, clRng);
+    var clBody = '', clOrder = '';
+    if (clSt !== 'good') {
+      if (cl < clRng.lo) {
+        var clDiff = ft.tg - cl;
+        if (clDiff < 0) clDiff = 0;
+        var cl125 = ffoz(dFC125(clDiff, G));
+        var cl10  = ffoz(dFC10(clDiff, G));
+        clBody = '<div class="rc-msg">FC is below the TFP 5% minimum. SWG may not be keeping up \u2014 check cell output and run time.</div>' +
+          doseBox([
+            {chem:'Liquid chlorine 12.5% (recommended)', amt: cl125, note:'Add to pool with pump running. Pour slowly near return jets.'},
+            {chem:'Bleach / liquid chlorine 10%',         amt: cl10,  note: null}
+          ], clDiff > 5 ? ('If algae is present, SLAM at ' + ft.sl + ' ppm: requires ' + ffoz(dFC125(ft.sl - cl, G)) + ' of 12.5% chlorine.') : null);
+        clOrder = cl125 + ' liquid chlorine 12.5%';
+      } else {
+        clBody = '<div class="rc-msg">FC is above target. Do not add more chlorine. Allow to drop naturally before swimming.</div>';
+        clOrder = 'allow to dissipate naturally';
+      }
+    }
+    addCard('cl', 'Free Chlorine', cl, ' ppm', clRng, clTgt,
+      'FC is in range. Never let it drop below ' + ft.mn + ' ppm (5% of CYA). Test every 2\u20133 days.',
+      clBody, clOrder);
+  }
+
+  // ── pH ────────────────────────────────────────────────────────
+  if (!isNaN(ph)) {
+    var phSt = status(ph, RNG.ph);
+    var phBody = '', phOrder = '';
+    if (phSt !== 'good') {
+      if (ph < RNG.ph.lo) {
+        var phUpDiff = 7.5 - ph;
+        var sa = ffowt(dPhUp(phUpDiff, G));
+        phBody = '<div class="rc-msg">pH too low \u2014 water is acidic. Chlorine rapidly consumed and harsh on skin.</div>' +
+          doseBox([{chem:'Soda ash (sodium carbonate)', amt: sa, note:'Dissolve in bucket first. Add near return jets. Retest after 4h. Add in two half-doses 4h apart.'}], null);
+        phOrder = sa + ' soda ash';
+      } else {
+        var phDnDiff = ph - 7.5;
+        var pct = ph >= 8.0 ? '~22%' : ph >= 7.8 ? '~48%' : '~65%';
+        var mur = ffoz(dPhDn(phDnDiff, G));
+        phBody = '<div class="rc-msg">pH too high \u2014 at ' + ph + ' only ' + pct + ' of chlorine is active. SWG electrolysis continuously drives pH up; regular acid additions are normal.</div>' +
+          doseBox([{chem:'Muriatic acid 31.45%', amt: mur, note:'Add slowly near deep end with pump running. Never add acid and chlorine together. Max 1 qt per 10,000 gal at once \u2014 retest after 1h.'}], null);
+        phOrder = mur + ' muriatic acid';
+      }
+    }
+    addCard('ph', 'pH', ph, '', RNG.ph, '7.4 \u2013 7.6',
+      'pH is ideal. Test every 2\u20133 days \u2014 SWG continuously pushes pH up.',
+      phBody, phOrder);
+  }
+
+  // ── TOTAL ALKALINITY ──────────────────────────────────────────
+  if (!isNaN(ta)) {
+    var taSt = status(ta, RNG.ta);
+    var taBody = '', taOrder = '';
+    if (taSt !== 'good') {
+      if (ta < RNG.ta.lo) {
+        var taUpDiff = 70 - ta;
+        var bs = fflbs(dTaUp(taUpDiff, G));
+        taBody = '<div class="rc-msg">TA too low \u2014 pH will swing unpredictably.</div>' +
+          doseBox([{chem:'Sodium bicarbonate (baking soda)', amt: bs, note:'Broadcast over surface with pump running. Retest after 6h. Raises pH slightly. Add in half-doses.'}], null);
+        taOrder = bs + ' baking soda';
+      } else {
+        var taDnDiff = ta - 70;
+        var taMur = ffoz(dTaDn(taDnDiff, G));
+        taBody = '<div class="rc-msg">TA too high \u2014 pH will be resistant to change and drift up faster (worsened by SWG). Target 60\u201380 ppm for SWG pools.</div>' +
+          doseBox([{chem:'Muriatic acid 31.45%', amt: taMur, note:'Pour in one concentrated spot near deep end with pump OFF for 1 hour. Then run pump and aerate (point returns upward) to let pH rise without raising TA.'}], null);
+        taOrder = taMur + ' muriatic acid (to lower TA)';
+      }
+    }
+    addCard('ta', 'Total Alkalinity', ta, ' ppm', RNG.ta, '60 \u2013 80 ppm (SWG)',
+      'TA is in range. Lower TA (60\u201380 vs 80\u2013120 standard) slows pH rise from electrolysis.',
+      taBody, taOrder);
+  }
+
+  // ── CALCIUM HARDNESS ──────────────────────────────────────────
+  if (!isNaN(ca)) {
+    var caSt = status(ca, RNG.ca);
+    var caBody = '', caOrder = '';
+    if (caSt !== 'good') {
+      if (ca < RNG.ca.lo) {
+        var caUpDiff = 250 - ca;
+        var cacl = fflbs(dCaUp(caUpDiff, G));
+        caBody = '<div class="rc-msg">Calcium too low \u2014 water will dissolve calcium from plaster and equipment.</div>' +
+          doseBox([{chem:'Calcium chloride (anhydrous)', amt: cacl, note:'Pre-dissolve in warm water (add chemical to water \u2014 generates heat). Pour slowly around perimeter. Never add to skimmer. Retest after 4h.'}], null);
+        caOrder = cacl + ' calcium chloride';
+      } else {
+        caBody = '<div class="rc-msg">Calcium too high \u2014 scale will form on surfaces and inside SWG cell.</div>' +
+          noFix('No chemical fix. Partially drain and refill: drain ~20\u201325% at a time and retest. Inspect SWG cell for calcium scale.');
+        caOrder = 'partial drain &amp; refill required';
+      }
+    }
+    addCard('ca', 'Calcium Hardness', ca, ' ppm', RNG.ca, '200 \u2013 400 ppm',
+      'Calcium is in range. Inspect SWG cell for scale every 3 months regardless.',
+      caBody, caOrder);
+  }
+
+  // ── CYANURIC ACID ─────────────────────────────────────────────
+  if (!isNaN(cya)) {
+    var cyaSt = status(cya, RNG.cya);
+    var cyaBody = '', cyaOrder = '';
+    if (cyaSt !== 'good') {
+      if (cya < RNG.cya.lo) {
+        var cyaUpDiff = 70 - cya;
+        var cyaAmt = ffowt(dCyaUp(cyaUpDiff, G));
+        cyaBody = '<div class="rc-msg">CYA too low \u2014 UV destroys chlorine rapidly. SWG does not produce CYA; it must be added separately.</div>' +
+          doseBox([{chem:'Cyanuric acid (granular stabilizer)', amt: cyaAmt, note:'Place in sock in front of return jet, or dissolve in bucket. Takes 24\u201348h to fully distribute. Retest in 48h before adding more.'}],
+            'Avoid adding during peak sun hours.');
+        cyaOrder = cyaAmt + ' cyanuric acid';
+      } else {
+        cyaBody = '<div class="rc-msg">CYA too high \u2014 chlorine\'s active fraction is suppressed. At CYA ' + cya + ' ppm you need at least ' + ft.mn + ' ppm FC minimum.</div>' +
+          noFix('No chemical fix. Drain and refill: drain ~25\u201330% and refill with fresh water, then retest. Repeat until CYA is below 90 ppm.');
+        cyaOrder = 'partial drain &amp; refill required';
+      }
+    }
+    addCard('cya', 'Cyanuric Acid (CYA)', cya, ' ppm', RNG.cya, '60 \u2013 90 ppm (SWG)',
+      'CYA is in range. Maintain FC above ' + ft.mn + ' ppm (5% of CYA) at all times.',
+      cyaBody, cyaOrder);
+  }
+
+  // ── SALT ──────────────────────────────────────────────────────
+  if (!isNaN(salt)) {
+    var saltSt = status(salt, RNG.salt);
+    var saltBody = '', saltOrder = '';
+    if (saltSt !== 'good') {
+      if (salt < RNG.salt.lo) {
+        var saltUpDiff = 3150 - salt;
+        var saltAmt = fflbs(dSaltUp(saltUpDiff, G));
+        saltBody = '<div class="rc-msg">Salt too low \u2014 SWG output will drop or trigger a low-salt alarm.</div>' +
+          doseBox([{chem:'Pool salt NaCl 99.4%+ (no additives)', amt: saltAmt, note:'Broadcast over surface with pump running. Run pump 24h before retesting \u2014 salt takes time to fully dissolve.'}],
+            'Check your generator manual for its specific ideal range.');
+        saltOrder = saltAmt + ' pool salt';
+      } else {
+        saltBody = '<div class="rc-msg">Salt too high \u2014 accelerates corrosion of metal equipment.</div>' +
+          noFix('No chemical fix. Partially drain and refill: drain ~15\u201320% at a time, run pump 24h, then retest.');
+        saltOrder = 'partial drain &amp; refill required';
+      }
+    }
+    addCard('salt', 'Salt Level', salt, ' ppm', RNG.salt, '2700 \u2013 3400 ppm',
+      'Salt is in range. Clean SWG cell every 3 months.',
+      saltBody, saltOrder);
+  }
+
+  // ── Treatment order ────────────────────────────────────────────
+  // Correct TFP order: TA → pH → Ca → CYA → FC → Salt
+  var seq = ['Total Alkalinity','pH','Calcium Hardness','Cyanuric Acid (CYA)','Free Chlorine','Salt Level'];
+  var ocard = document.getElementById('ocard');
+  var olist = document.getElementById('olist');
+  if (treatments.length > 0) {
+    ocard.style.display = '';
+    treatments.sort(function(a,b){ return seq.indexOf(a.label) - seq.indexOf(b.label); });
+    var oh = '';
+    treatments.forEach(function(t, i) {
+      oh += '<li class="oitem"><div class="onum">' + (i+1) + '</div><div class="otext"><strong>' + t.label + '</strong><br><span class="odose">' + t.line + '</span></div></li>';
+    });
+    olist.innerHTML = oh;
+  } else {
+    ocard.style.display = 'none';
+  }
+
+  // ── Notes ──────────────────────────────────────────────────────
+  // If nothing was entered at all, show a prompt
+  var anyEntered = [cl,ph,ta,ca,cya,salt].some(function(v){ return !isNaN(v); });
+  if (!anyEntered) {
+    document.getElementById('notes').innerHTML = '<strong>// enter at least one reading above and click analyze</strong>';
+    return;
+  }
+  var noteLines = [];
+  if (!isNaN(ph) && ph > 7.8)
+    noteLines.push('\u26a0 pH ' + ph + ': only ' + (ph>=8.0?'~22%':'~48%') + ' of chlorine is active (HOCl). Fix pH first.');
+  if (!isNaN(cl) && !isNaN(cya) && cya > 0 && cl < ft.mn)
+    noteLines.push('\u26a0 FC/CYA ratio is ' + (cl/cya*100).toFixed(1) + '% \u2014 below the 5% TFP minimum. Algae can establish within hours.');
+  if (!isNaN(cya) && cya > 90)
+    noteLines.push('\u26a0 CYA above 90 ppm suppresses HOCl. Even adequate FC may not sanitize effectively.');
+  noteLines.push('\u2139 SWG electrolysis drives pH up continuously. Expect regular muriatic acid additions \u2014 this is normal.');
+  noteLines.push('\u2139 Never mix pool chemicals. Add each separately with pump running. Wait 15\u201330 min between additions.');
+  noteLines.push('\u2139 Inspect and clean SWG cell every 3 months. Calcium scale on cell plates reduces chlorine output.');
+
+  var nHTML = '<strong>// notes</strong>';
+  noteLines.forEach(function(n) { nHTML += '<div>' + n + '</div>'; });
+  document.getElementById('notes').innerHTML = nHTML;
+
+
+  // ── Save to server history ─────────────────────────────────────
+  fetch('/api/analyze', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      cl:   isNaN(cl)   ? null : cl,
+      ph:   isNaN(ph)   ? null : ph,
+      ta:   isNaN(ta)   ? null : ta,
+      ca:   isNaN(ca)   ? null : ca,
+      cya:  isNaN(cya)  ? null : cya,
+      salt: isNaN(salt) ? null : salt,
+      temp: isNaN(tmp)  ? null : tmp,
+      pool_gallons: parseFloat(document.getElementById('vol').value) || 24000,
+      source: 'manual'
+    })
+  }).then(function(){ loadHistoryFromServer(); }).catch(function(){});
+
+  try { setTimeout(function(){ document.getElementById('out').scrollIntoView({behavior:'smooth', block:'start'}); }, 50); } catch(e) {}
+}
+
+
+// ── History (server-backed) ───────────────────────────────────
+
+function renderHistory(history) {
+  var el = document.getElementById('hist-body');
+  if (!history || !history.length) {
+    el.innerHTML = '<div class="hist-empty">no tests logged yet &mdash; run an analysis to save a reading</div>';
+    return;
+  }
+  var rows = '';
+  history.slice().reverse().forEach(function(e) {
+    var rd = e.readings || {};
+    var ft = fcTargets(rd.cya || 0);
+    var clRng = {lo:ft.mn, hi:ft.sl, ilo:ft.mn, ihi:ft.tg*2};
+    function hv(v, rng) {
+      if (v === null || v === undefined) return '<span class="hval na">&mdash;</span>';
+      var st = status(parseFloat(v), rng);
+      return '<span class="hval ' + st + '">' + v + '</span>';
+    }
+    var src = e.source || 'manual';
+    var srcBadge = src === 'waterguru' ? '<span style="font-size:9px;background:#e8f2fc;color:#2d7dd2;padding:1px 5px;border-radius:3px;margin-left:4px">WaterGuru</span>' : '';
+    rows += '<tr>' +
+      '<td class="hdate">' + (e.timestamp||'').replace('T',' ').slice(0,16) + srcBadge + '</td>' +
+      '<td>' + hv(rd.cl,  clRng) + '</td>' +
+      '<td>' + hv(rd.ph,  {lo:7.2,hi:7.8,ilo:7.4,ihi:7.6}) + '</td>' +
+      '<td>' + hv(rd.ta,  {lo:50,hi:90,ilo:60,ihi:80}) + '</td>' +
+      '<td>' + hv(rd.ca,  {lo:200,hi:400,ilo:200,ihi:400}) + '</td>' +
+      '<td>' + hv(rd.cya, {lo:60,hi:90,ilo:60,ihi:90}) + '</td>' +
+      '<td>' + hv(rd.salt,{lo:2700,hi:3400,ilo:2700,ihi:3400}) + '</td>' +
+      '<td>' + (e.lsi !== null && e.lsi !== undefined ? '<span class="hval">' + e.lsi + '</span>' : '<span class="hval na">&mdash;</span>') + '</td>' +
+      '<td><button class="hload" onclick="loadEntry(' + JSON.stringify(rd) + ')">load</button></td>' +
+    '</tr>';
+  });
+  el.innerHTML = '<table class="hist-table"><thead><tr>' +
+    '<th>Date</th><th>FC</th><th>pH</th><th>TA</th><th>CH</th><th>CYA</th><th>Salt</th><th>LSI</th><th></th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+function loadHistoryFromServer() {
+  fetch('/api/history?limit=50')
+    .then(function(r){ return r.json(); })
+    .then(function(h){ renderHistory(h); })
+    .catch(function(){ renderHistory([]); });
+}
+
+function loadEntry(rd) {
+  function sv(id, v) { var el=document.getElementById(id); if(el && v!==null && v!==undefined) el.value=v; }
+  sv('f_cl', rd.cl); sv('f_ph', rd.ph); sv('f_ta', rd.ta);
+  sv('f_ca', rd.ca); sv('f_cya', rd.cya); sv('f_salt', rd.salt); sv('f_tmp', rd.temp);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function clearHistory() {
+  if (!confirm('Clear all test history?')) return;
+  fetch('/api/history', {method:'DELETE'})
+    .then(function(){ loadHistoryFromServer(); });
+}
+
+function exportCSV() {
+  fetch('/api/history?limit=500')
+    .then(function(r){ return r.json(); })
+    .then(function(h){
+      if (!h.length) { alert('No history to export.'); return; }
+      var rows = [['Date','Source','FC','pH','TA','CA','CYA','Salt','Temp','LSI','Status']];
+      h.forEach(function(e){
+        var rd=e.readings||{};
+        rows.push([e.timestamp||'',e.source||'',rd.cl||'',rd.ph||'',rd.ta||'',rd.ca||'',rd.cya||'',rd.salt||'',rd.temp||'',e.lsi||'',e.overall_status||'']);
+      });
+      var csv=rows.map(function(r){return r.join(',');}).join('\n');
+      var a=document.createElement('a');
+      a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+      a.download='pool-history.csv'; a.click();
+    });
+}
+
+// Load on page load
+loadHistoryFromServer();
+
+</script>
+</body>
+</html>

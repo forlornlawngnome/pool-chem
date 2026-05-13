@@ -1,0 +1,11 @@
+services:
+  pool-chem:
+    image: ghcr.io/forlornlawngnome/pool-chem:latest
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    volumes:
+      - pool-chem-data:/data
+
+volumes:
+  pool-chem-data:
