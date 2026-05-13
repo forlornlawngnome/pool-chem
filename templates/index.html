@@ -577,13 +577,16 @@ function go() {
 // ── History (server-backed) ───────────────────────────────────
 
 function renderHistory(history) {
+  _cachedHistory = history || [];
   var el = document.getElementById('hist-body');
   if (!history || !history.length) {
     el.innerHTML = '<div class="hist-empty">no tests logged yet &mdash; run an analysis to save a reading</div>';
     return;
   }
   var rows = '';
-  history.slice().reverse().forEach(function(e) {
+  var reversed = history.slice().reverse();
+  reversed.forEach(function(e, ri) {
+    var idx = history.length - 1 - ri;
     var rd = e.readings || {};
     var ft = fcTargets(rd.cya || 0);
     var clRng = {lo:ft.mn, hi:ft.sl, ilo:ft.mn, ihi:ft.tg*2};
@@ -603,12 +606,17 @@ function renderHistory(history) {
       '<td>' + hv(rd.cya, {lo:60,hi:90,ilo:60,ihi:90}) + '</td>' +
       '<td>' + hv(rd.salt,{lo:2700,hi:3400,ilo:2700,ihi:3400}) + '</td>' +
       '<td>' + (e.lsi !== null && e.lsi !== undefined ? '<span class="hval">' + e.lsi + '</span>' : '<span class="hval na">&mdash;</span>') + '</td>' +
-      '<td><button class="hload" onclick="loadEntry(' + JSON.stringify(rd) + ')">load</button></td>' +
+      '<td><button class="hload" data-idx="' + idx + '">load</button></td>' +
     '</tr>';
   });
   el.innerHTML = '<table class="hist-table"><thead><tr>' +
     '<th>Date</th><th>FC</th><th>pH</th><th>TA</th><th>CH</th><th>CYA</th><th>Salt</th><th>LSI</th><th></th>' +
     '</tr></thead><tbody>' + rows + '</tbody></table>';
+  el.querySelectorAll('.hload').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      loadEntry(parseInt(this.getAttribute('data-idx')));
+    });
+  });
 }
 
 function loadHistoryFromServer() {
@@ -618,8 +626,12 @@ function loadHistoryFromServer() {
     .catch(function(){ renderHistory([]); });
 }
 
-function loadEntry(rd) {
-  function sv(id, v) { var el=document.getElementById(id); if(el && v!==null && v!==undefined) el.value=v; }
+var _cachedHistory = [];
+
+function loadEntry(idx) {
+  var rd = _cachedHistory[idx] && _cachedHistory[idx].readings;
+  if (!rd) return;
+  function sv(id, v) { var el=document.getElementById(id); if(el && v!==null && v!==undefined) el.value=v; else if(el) el.value=''; }
   sv('f_cl', rd.cl); sv('f_ph', rd.ph); sv('f_ta', rd.ta);
   sv('f_ca', rd.ca); sv('f_cya', rd.cya); sv('f_salt', rd.salt); sv('f_tmp', rd.temp);
   window.scrollTo({top:0,behavior:'smooth'});
